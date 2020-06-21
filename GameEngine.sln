@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine", "GameEngine\GameEngine.csproj", "{E2745D86-028A-4EF5-9765-37055ECA76CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sandbox", "Sandbox\Sandbox.csproj", "{F2849C28-8805-4EF5-99AB-E3520EC3F045}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E2745D86-028A-4EF5-9765-37055ECA76CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2745D86-028A-4EF5-9765-37055ECA76CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2745D86-028A-4EF5-9765-37055ECA76CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2745D86-028A-4EF5-9765-37055ECA76CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2849C28-8805-4EF5-99AB-E3520EC3F045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2849C28-8805-4EF5-99AB-E3520EC3F045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2849C28-8805-4EF5-99AB-E3520EC3F045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2849C28-8805-4EF5-99AB-E3520EC3F045}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE5492D3-0357-43B9-B5BD-2A1260575F8C}
+	EndGlobalSection
+EndGlobal
