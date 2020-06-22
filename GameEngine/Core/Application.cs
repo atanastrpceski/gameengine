@@ -4,12 +4,13 @@ namespace GameEngine.Core
 {
     public class Application : IDisposable
     {
-        Window _window;
+        IWindow _window;
         private bool isRunning = true;
 
         public Application(WindowProp prop)
         {
-            _window = new Window(prop);
+            Log.Init();
+            _window = WindowFactory.Create(prop, PlatformEnum.Windows);
         }
         public void Run()
         {

@@ -1,9 +1,19 @@
 ﻿using System;
 using GLFW;
 using System.Runtime.InteropServices;
+using GameEngine.Core;
 
-namespace GameEngine.Core
+namespace GameEngine.Platform.Windows
 {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WindowData
+    {
+        public string Title;
+        public int Width;
+        public int Height;
+        public bool VSync;
+    };
+
     public class Window : IWindow
     {
         GLFW.Window _window;
@@ -13,11 +23,8 @@ namespace GameEngine.Core
 
         static bool _isGLFWInitialized = false;
 
-        WindowData IWindow.WindowData => _windowData;
-
         public Window(WindowProp prop)
         {
-            Log.Init();
             Init(prop);
         }
 

@@ -9,13 +9,4 @@ namespace GameEngine.Core
         public int Height { get; set; }
 
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WindowData
-    {
-        public string Title;
-        public int Width;
-        public int Height;
-        public bool VSync;
-    };
 }

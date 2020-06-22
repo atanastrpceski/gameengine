@@ -12,8 +12,6 @@ namespace GameEngine.Core
             _app = app;
             _args = args;
 
-            Log.Init();
-
             Log.CoreLogger.Warn("Init");
             Log.ClientLogger.Warn("Init");
 
