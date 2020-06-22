@@ -34,6 +34,8 @@ namespace GameEngine.Core
 
         private bool OnWindowClose()
         {
+            Log.CoreLogger.Info("WindowCloseEvent");
+
             _isRunning = false;
             return true;
         }

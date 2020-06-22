@@ -16,6 +16,7 @@ namespace GameEngine.Core.Events
             {
                 @event.IsHandled = true;
                 action?.Invoke();
+                @event = null;
             }
         }
     }

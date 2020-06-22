@@ -1,5 +1,5 @@
-﻿using System;
-using GLFW;
+﻿using GLFW;
+using System;
 using System.Runtime.InteropServices;
 using GameEngine.Core;
 using GameEngine.Core.Events;
@@ -8,10 +8,10 @@ namespace GameEngine.Platform.Windows
 {
     public class WindowData
     {
-        public string Title;
+        public bool VSync;
         public int Width;
         public int Height;
-        public bool VSync;
+        public string Title;
     };
 
     public class Window : IWindow
@@ -48,6 +48,7 @@ namespace GameEngine.Platform.Windows
                 bool success = Glfw.Init();
                 CoreAssert.Assert(success, "Could not intialize GLFW!");
 
+                Glfw.SetErrorCallback(HandleError);
                 _isGLFWInitialized = true;
             }
 
@@ -57,28 +58,77 @@ namespace GameEngine.Platform.Windows
             SetVSync(true);
 
             //Set callbacks
-            _window.SizeChanged += HandleWindowSizeChanged;
             _window.Closed += HandleWindowClosed;
+            _window.KeyAction += HandleKeyAction;
+            _window.MouseMoved += HandleMouseMoved;
+            _window.MouseScroll += HandleMouseScroll;
+            _window.SizeChanged += HandleWindowSizeChanged;
+        }
+
+        private void HandleMouseMoved(object sender, MouseMoveEventArgs e)
+        {
+            _eventHandler?.Invoke(new MouseMovedEvent(e.X, e.Y));
+        }
+
+        private void HandleMouseScroll(object sender, MouseMoveEventArgs e)
+        {
+            _eventHandler?.Invoke(new MouseScrolledEvent(e.X, e.Y));
+        }
+
+        private void HandleKeyAction(object sender, KeyEventArgs e)
+        {
+            switch (e.State)
+            {
+                case InputState.Press:
+                    {
+                        _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 0));
+                        break;
+                    }
+                case InputState.Release:
+                    {
+                        _eventHandler?.Invoke(new KeyReleasedEvent(e.Key));
+                        break;
+                    }
+                case InputState.Repeat:
+                    {
+                        _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 1));
+                        break;
+                    }
+            }
+        }
+
+        private void HandleError(ErrorCode code, IntPtr message)
+        {
+            if (code != ErrorCode.None)
+            {
+                GCHandle handle = (GCHandle)message;
+                string description = handle.Target as string;
+
+                Log.CoreLogger.Error($"GLFW Error ({code}): {description}");
+            }
         }
 
         private void HandleWindowClosed(object sender, EventArgs e)
         {
-            WindowCloseEvent @event = new WindowCloseEvent();
-            _eventHandler?.Invoke(@event);
+            _eventHandler?.Invoke(new WindowCloseEvent());
         }
 
         private void HandleWindowSizeChanged(object sender, SizeChangeEventArgs e)
         {
-            WindowResizeEvent @event = new WindowResizeEvent(e.Size.Width, e.Size.Height);
-            _eventHandler?.Invoke(@event);
+            _data.Width = e.Size.Width;
+            _data.Height = e.Size.Height;
+            _eventHandler?.Invoke(new WindowResizeEvent(e.Size.Width, e.Size.Height));
         }
 
         public void Dispose()
         {
-            _window.SizeChanged -= HandleWindowSizeChanged;
             _window.Closed += HandleWindowClosed;
+            _window.KeyAction -= HandleKeyAction;
+            _window.MouseMoved -= HandleMouseMoved;
+            _window.SizeChanged -= HandleWindowSizeChanged;
+            _window.MouseScroll -= HandleMouseScroll;
 
-            if(!_window.IsClosed)
+            if (!_window.IsClosed)
                 Glfw.DestroyWindow(_window);
         }
 
