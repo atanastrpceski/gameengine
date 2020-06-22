@@ -1,16 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GameEngine.Core.Events
 {
-    class EventDispatcher
+    internal static class EventDispatcher<T>
+        where T : Event
     {
-        private Event _event;
+        internal delegate bool TriggerEvent();
 
-        public EventDispatcher(Event @event)
+        internal static void Dispatch(Event @event, TriggerEvent action)
         {
-            _event = @event;
+            if (@event.IsHandled)
+                return;
+
+            if (@event.GetType() == typeof(T))
+            {
+                @event.IsHandled = true;
+                action?.Invoke();
+            }
         }
     }
 }

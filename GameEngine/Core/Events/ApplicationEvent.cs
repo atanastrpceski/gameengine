@@ -23,4 +23,14 @@ namespace GameEngine.Core.Events
             return $"WindowResizeEvent: {_width}, {_height}";
         }
     }
+
+
+    public class WindowCloseEvent : Event 
+    {
+        public WindowCloseEvent()
+        {
+            _eventType = EventType.WindowClose;
+            _category = EventCategory.Application;
+        }
+    }
 }

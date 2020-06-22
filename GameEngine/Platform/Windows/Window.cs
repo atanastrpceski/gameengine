@@ -2,11 +2,11 @@
 using GLFW;
 using System.Runtime.InteropServices;
 using GameEngine.Core;
+using GameEngine.Core.Events;
 
 namespace GameEngine.Platform.Windows
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WindowData
+    public class WindowData
     {
         public string Title;
         public int Width;
@@ -16,10 +16,11 @@ namespace GameEngine.Platform.Windows
 
     public class Window : IWindow
     {
-        GLFW.Window _window;
+        NativeWindow _window;
 
-        WindowData _windowData;
+        WindowData _data;
         IntPtr _windowDataPtr;
+        Core.EventHandler _eventHandler;
 
         static bool _isGLFWInitialized = false;
 
@@ -30,12 +31,15 @@ namespace GameEngine.Platform.Windows
 
         void Init(WindowProp props)
         {
-            _windowData.Title = props.Title;
-            _windowData.Width = props.Width;
-            _windowData.Height = props.Height;
+            _data = new WindowData
+            {
+                Title = props.Title,
+                Width = props.Width,
+                Height = props.Height
+            };
 
-            _windowDataPtr = Marshal.AllocHGlobal(Marshal.SizeOf(_windowData));
-            Marshal.StructureToPtr(_windowData, _windowDataPtr, false);
+            GCHandle handle = GCHandle.Alloc(_data);
+            _windowDataPtr = (IntPtr)handle;
 
             Log.CoreLogger.Info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
@@ -47,15 +51,35 @@ namespace GameEngine.Platform.Windows
                 _isGLFWInitialized = true;
             }
 
-            _window = Glfw.CreateWindow((int)props.Width, (int)props.Height, _windowData.Title, Monitor.None, GLFW.Window.None);
+            _window = new NativeWindow((int)props.Width, (int)props.Height, _data.Title, Monitor.None, GLFW.Window.None);
             Glfw.MakeContextCurrent(_window);
             Glfw.SetWindowUserPointer(_window, _windowDataPtr);
             SetVSync(true);
+
+            //Set callbacks
+            _window.SizeChanged += HandleWindowSizeChanged;
+            _window.Closed += HandleWindowClosed;
+        }
+
+        private void HandleWindowClosed(object sender, EventArgs e)
+        {
+            WindowCloseEvent @event = new WindowCloseEvent();
+            _eventHandler?.Invoke(@event);
+        }
+
+        private void HandleWindowSizeChanged(object sender, SizeChangeEventArgs e)
+        {
+            WindowResizeEvent @event = new WindowResizeEvent(e.Size.Width, e.Size.Height);
+            _eventHandler?.Invoke(@event);
         }
 
         public void Dispose()
         {
-            Glfw.DestroyWindow(_window);
+            _window.SizeChanged -= HandleWindowSizeChanged;
+            _window.Closed += HandleWindowClosed;
+
+            if(!_window.IsClosed)
+                Glfw.DestroyWindow(_window);
         }
 
         public void OnUpdate()
@@ -81,12 +105,17 @@ namespace GameEngine.Platform.Windows
             else
                 Glfw.SwapInterval(0);
 
-            _windowData.VSync = enabled;
+            _data.VSync = enabled;
         }
 
         public bool IsVSync()
         {
-            return _windowData.VSync;
+            return _data.VSync;
+        }
+
+        public void SetEventHandler(Core.EventHandler eventHandler)
+        {
+            _eventHandler = eventHandler;
         }
     }
 }

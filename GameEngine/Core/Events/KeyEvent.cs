@@ -1,16 +1,18 @@
 ﻿
+using GLFW;
+
 namespace GameEngine.Core.Events
 {
     public class KeyEvent : Event
     {
-        protected Key _keyCode;
+        protected KeyEventArgs _keyCode;
 
-        public Key GetKeyCode()
+        public KeyEventArgs GetKeyCode()
         {
             return _keyCode;
         }
 
-        protected KeyEvent(Key key)
+        protected KeyEvent(KeyEventArgs key)
         {
             _category = EventCategory.Keyboard | EventCategory.Input;
 
@@ -26,7 +28,7 @@ namespace GameEngine.Core.Events
         {
             return _repeatCount;
         }
-        public KeyPressedEvent(Key key, int repeatCount) : base(key)
+        public KeyPressedEvent(KeyEventArgs key, int repeatCount) : base(key)
         {
             _eventType = EventType.KeyPressed;
 
@@ -41,7 +43,7 @@ namespace GameEngine.Core.Events
     public class KeyReleasedEvent : KeyEvent
     {
 
-        public KeyReleasedEvent(Key key) : base(key)
+        public KeyReleasedEvent(KeyEventArgs key) : base(key)
         {
             _eventType = EventType.KeyReleased;
         }
@@ -53,7 +55,7 @@ namespace GameEngine.Core.Events
 
     public class KeyTypedEvent : KeyEvent
     {
-        public KeyTypedEvent(Key key, int repeatCount) : base(key)
+        public KeyTypedEvent(KeyEventArgs key, int repeatCount) : base(key)
         {
             _eventType = EventType.KeyTyped;
         }
