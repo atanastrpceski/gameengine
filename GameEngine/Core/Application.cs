@@ -8,6 +8,7 @@ namespace GameEngine.Core
     {
         IWindow _window;
         private bool _isRunning = true;
+        private LayerStack _layerStack;
 
         public Application(WindowProp prop)
         {
@@ -23,6 +24,12 @@ namespace GameEngine.Core
             {
                 Gl.glClearColor(1, 0, 1, 1);
                 Gl.glClear(Gl.GL_COLOR_BUFFER_BIT);
+
+                foreach (var layer in _layerStack.Layers)
+                {
+                    layer.OnUpdate();
+                }
+
                 _window.OnUpdate();
             }
         }
@@ -30,6 +37,13 @@ namespace GameEngine.Core
         public void OnEvent(Event @event)
         {
             EventDispatcher<WindowCloseEvent>.Dispatch(@event, OnWindowClose);
+
+            foreach (var layer in _layerStack.Layers)
+            {
+                layer.OnEvent(@event);
+                if (@event.IsHandled)
+                    break;
+            }
         }
 
         private bool OnWindowClose()
@@ -40,6 +54,15 @@ namespace GameEngine.Core
             return true;
         }
 
+        void PushLayer(Layer layer)
+        {
+            _layerStack.PushLayer(layer);
+        }
+
+        void PushOverlay(Layer layer)
+        {
+            _layerStack.PushOverlay(layer);
+        }
 
         public void Dispose()
         {
