@@ -1,5 +1,5 @@
 ﻿using GameEngine.Core.Events;
-using GameEngine.OpenGL;
+using OpenToolkit.Graphics.ES30;
 using System;
 
 namespace GameEngine.Core
@@ -12,6 +12,7 @@ namespace GameEngine.Core
 
         public Application(WindowProp prop)
         {
+            _layerStack = new LayerStack();
             Log.Init();
 
             _window = WindowFactory.Create(prop, PlatformEnum.Windows);
@@ -22,8 +23,8 @@ namespace GameEngine.Core
         {
             while (_isRunning)
             {
-                Gl.glClearColor(1, 0, 1, 1);
-                Gl.glClear(Gl.GL_COLOR_BUFFER_BIT);
+                GL.ClearColor(1, 0, 1, 1);
+                GL.Clear(ClearBufferMask.ColorBufferBit);
 
                 foreach (var layer in _layerStack.Layers)
                 {

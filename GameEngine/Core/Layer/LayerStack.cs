@@ -44,7 +44,7 @@ namespace GameEngine.Core
 
                 foreach (var overlay in _overlays)
                 {
-                    yield return overlay;
+                    ////yield return overlay;
                 }
             }
         }

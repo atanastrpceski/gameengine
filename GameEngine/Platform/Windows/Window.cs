@@ -1,28 +1,14 @@
-﻿using GLFW;
-using System;
-using System.Runtime.InteropServices;
-using GameEngine.Core;
+﻿using GameEngine.Core;
 using GameEngine.Core.Events;
+using OpenToolkit.Windowing.Common;
+using OpenToolkit.Windowing.Desktop;
 
 namespace GameEngine.Platform.Windows
 {
-    public class WindowData
-    {
-        public bool VSync;
-        public int Width;
-        public int Height;
-        public string Title;
-    };
-
     public class Window : IWindow
     {
-        NativeWindow _window;
-
-        WindowData _data;
-        IntPtr _windowDataPtr;
+        GameWindow _window;
         Core.EventHandler _eventHandler;
-
-        static bool _isGLFWInitialized = false;
 
         public Window(WindowProp prop)
         {
@@ -31,136 +17,104 @@ namespace GameEngine.Platform.Windows
 
         void Init(WindowProp props)
         {
-            _data = new WindowData
-            {
-                Title = props.Title,
-                Width = props.Width,
-                Height = props.Height
-            };
-
-            GCHandle handle = GCHandle.Alloc(_data);
-            _windowDataPtr = (IntPtr)handle;
-
             Log.CoreLogger.Info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
-            if (!_isGLFWInitialized)
-            {
-                bool success = Glfw.Init();
-                CoreAssert.Assert(success, "Could not intialize GLFW!");
+            var gameWindowSettings = GameWindowSettings.Default;
+            var nativeWindowSettings = NativeWindowSettings.Default;
 
-                Glfw.SetErrorCallback(HandleError);
-                _isGLFWInitialized = true;
-            }
+            nativeWindowSettings.Size = new OpenToolkit.Mathematics.Vector2i(props.Width, props.Height);
+            nativeWindowSettings.Title = props.Title;
 
-            _window = new NativeWindow((int)props.Width, (int)props.Height, _data.Title, Monitor.None, GLFW.Window.None);
-            Glfw.MakeContextCurrent(_window);
-            Glfw.SetWindowUserPointer(_window, _windowDataPtr);
+            _window = new GameWindow(gameWindowSettings, nativeWindowSettings);
+            _window.MakeCurrent();
+
             SetVSync(true);
 
             //Set callbacks
             _window.Closed += HandleWindowClosed;
-            _window.KeyAction += HandleKeyAction;
-            _window.MouseMoved += HandleMouseMoved;
-            _window.MouseScroll += HandleMouseScroll;
-            _window.SizeChanged += HandleWindowSizeChanged;
+            _window.KeyUp += HandleKeyUp;
+            _window.KeyDown += HandleKeyDown;
+            _window.MouseMove += HandleMouseMoved;
+            _window.MouseWheel += HandleMouseScroll;
+            _window.Resize += HandleWindowSizeChanged;
         }
 
-        private void HandleMouseMoved(object sender, MouseMoveEventArgs e)
+        private void HandleMouseMoved(MouseMoveEventArgs e)
         {
             _eventHandler?.Invoke(new MouseMovedEvent(e.X, e.Y));
         }
 
-        private void HandleMouseScroll(object sender, MouseMoveEventArgs e)
+        private void HandleMouseScroll(MouseWheelEventArgs e)
         {
-            _eventHandler?.Invoke(new MouseScrolledEvent(e.X, e.Y));
+            _eventHandler?.Invoke(new MouseScrolledEvent(e.OffsetX, e.OffsetY));
         }
 
-        private void HandleKeyAction(object sender, KeyEventArgs e)
+        private void HandleKeyUp(KeyboardKeyEventArgs e)
         {
-            switch (e.State)
+            _eventHandler?.Invoke(new KeyReleasedEvent(e.Key));
+        }
+
+        private void HandleKeyDown(KeyboardKeyEventArgs e)
+        {
+            if (e.IsRepeat)
             {
-                case InputState.Press:
-                    {
-                        _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 0));
-                        break;
-                    }
-                case InputState.Release:
-                    {
-                        _eventHandler?.Invoke(new KeyReleasedEvent(e.Key));
-                        break;
-                    }
-                case InputState.Repeat:
-                    {
-                        _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 1));
-                        break;
-                    }
+                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 1));
+            }
+            else
+            {
+                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 0));
             }
         }
 
-        private void HandleError(ErrorCode code, IntPtr message)
-        {
-            if (code != ErrorCode.None)
-            {
-                GCHandle handle = (GCHandle)message;
-                string description = handle.Target as string;
-
-                Log.CoreLogger.Error($"GLFW Error ({code}): {description}");
-            }
-        }
-
-        private void HandleWindowClosed(object sender, EventArgs e)
+        private void HandleWindowClosed()
         {
             _eventHandler?.Invoke(new WindowCloseEvent());
         }
 
-        private void HandleWindowSizeChanged(object sender, SizeChangeEventArgs e)
+        private void HandleWindowSizeChanged(ResizeEventArgs e)
         {
-            _data.Width = e.Size.Width;
-            _data.Height = e.Size.Height;
-            _eventHandler?.Invoke(new WindowResizeEvent(e.Size.Width, e.Size.Height));
+            _eventHandler?.Invoke(new WindowResizeEvent(_window.Size.X , _window.Size.Y));
         }
 
         public void Dispose()
         {
-            _window.Closed += HandleWindowClosed;
-            _window.KeyAction -= HandleKeyAction;
-            _window.MouseMoved -= HandleMouseMoved;
-            _window.SizeChanged -= HandleWindowSizeChanged;
-            _window.MouseScroll -= HandleMouseScroll;
-
-            if (!_window.IsClosed)
-                Glfw.DestroyWindow(_window);
+            _window.Closed -= HandleWindowClosed;
+            _window.KeyUp -= HandleKeyUp;
+            _window.KeyDown -= HandleKeyDown;
+            _window.MouseMove -= HandleMouseMoved;
+            _window.MouseWheel -= HandleMouseScroll;
+            _window.Resize -= HandleWindowSizeChanged;
+            _window.Close();
+            _window.Dispose();
         }
 
         public void OnUpdate()
         {
-            Glfw.PollEvents();
-            Glfw.SwapBuffers(_window);
+            _window.ProcessEvents();
+            _window.SwapBuffers();
         }
 
         public int GetWidth()
         {
-            throw new NotImplementedException();
+            return _window.Size.X;
         }
 
         public int GetHeight()
         {
-            throw new NotImplementedException();
+            return _window.Size.Y;
         }
 
         public void SetVSync(bool enabled)
         {
             if (enabled)
-                Glfw.SwapInterval(1);
+                _window.VSync = VSyncMode.On;
             else
-                Glfw.SwapInterval(0);
-
-            _data.VSync = enabled;
+                _window.VSync = VSyncMode.Off;
         }
 
         public bool IsVSync()
         {
-            return _data.VSync;
+            return _window.VSync == VSyncMode.On;
         }
 
         public void SetEventHandler(Core.EventHandler eventHandler)
