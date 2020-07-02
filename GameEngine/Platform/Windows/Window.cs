@@ -1,14 +1,17 @@
 ﻿using GameEngine.Core;
 using GameEngine.Core.Events;
-using OpenToolkit.Windowing.Common;
-using OpenToolkit.Windowing.Desktop;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Input;
 
 namespace GameEngine.Platform.Windows
 {
     public class Window : IWindow
     {
-        GameWindow _window;
-        Core.EventHandler _eventHandler;
+        NativeWindow _window;
+        EventHandler _eventHandler;
+
+        private GraphicsContext _graphicsContext;
 
         public Window(WindowProp prop)
         {
@@ -19,18 +22,19 @@ namespace GameEngine.Platform.Windows
         {
             Log.CoreLogger.Info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
-            var gameWindowSettings = GameWindowSettings.Default;
-            var nativeWindowSettings = NativeWindowSettings.Default;
+            _window = new NativeWindow(props.Width, props.Height, props.Title, GameWindowFlags.Default, GraphicsMode.Default, DisplayDevice.Default);
 
-            nativeWindowSettings.Size = new OpenToolkit.Mathematics.Vector2i(props.Width, props.Height);
-            nativeWindowSettings.Title = props.Title;
-
-            _window = new GameWindow(gameWindowSettings, nativeWindowSettings);
-            _window.MakeCurrent();
+            GraphicsContextFlags flags = GraphicsContextFlags.Default;
+            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _window.WindowInfo, 3, 0, flags);
+            _graphicsContext.MakeCurrent(_window.WindowInfo);
+            ((IGraphicsContextInternal)_graphicsContext).LoadAll(); // wtf is this?
 
             SetVSync(true);
 
-            //Set callbacks
+            _window.Visible = true;
+
+            ////Set callbacks
+
             _window.Closed += HandleWindowClosed;
             _window.KeyUp += HandleKeyUp;
             _window.KeyDown += HandleKeyDown;
@@ -39,41 +43,41 @@ namespace GameEngine.Platform.Windows
             _window.Resize += HandleWindowSizeChanged;
         }
 
-        private void HandleMouseMoved(MouseMoveEventArgs e)
+        private void HandleMouseMoved(object sender, MouseMoveEventArgs e)
         {
             _eventHandler?.Invoke(new MouseMovedEvent(e.X, e.Y));
         }
 
-        private void HandleMouseScroll(MouseWheelEventArgs e)
+        private void HandleMouseScroll(object sender, MouseWheelEventArgs e)
         {
-            _eventHandler?.Invoke(new MouseScrolledEvent(e.OffsetX, e.OffsetY));
+            _eventHandler?.Invoke(new MouseScrolledEvent(e.X, e.Y));
         }
 
-        private void HandleKeyUp(KeyboardKeyEventArgs e)
+        private void HandleKeyUp(object sender, KeyboardKeyEventArgs e)
         {
-            _eventHandler?.Invoke(new KeyReleasedEvent(e.Key));
+            _eventHandler?.Invoke(new KeyReleasedEvent(e.Key, e.Modifiers));
         }
 
-        private void HandleKeyDown(KeyboardKeyEventArgs e)
+        private void HandleKeyDown(object sender, KeyboardKeyEventArgs e)
         {
             if (e.IsRepeat)
             {
-                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 1));
+                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, e.Modifiers, 1));
             }
             else
             {
-                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, 0));
+                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, e.Modifiers, 0));
             }
         }
 
-        private void HandleWindowClosed()
+        private void HandleWindowClosed(object sender, System.EventArgs e)
         {
             _eventHandler?.Invoke(new WindowCloseEvent());
         }
 
-        private void HandleWindowSizeChanged(ResizeEventArgs e)
+        private void HandleWindowSizeChanged(object sender, System.EventArgs e)
         {
-            _eventHandler?.Invoke(new WindowResizeEvent(_window.Size.X , _window.Size.Y));
+            _eventHandler?.Invoke(new WindowResizeEvent(_window.Size.Width, _window.Size.Height));
         }
 
         public void Dispose()
@@ -84,6 +88,10 @@ namespace GameEngine.Platform.Windows
             _window.MouseMove -= HandleMouseMoved;
             _window.MouseWheel -= HandleMouseScroll;
             _window.Resize -= HandleWindowSizeChanged;
+
+            _graphicsContext.Dispose();
+            _window.Visible = false;
+
             _window.Close();
             _window.Dispose();
         }
@@ -91,35 +99,61 @@ namespace GameEngine.Platform.Windows
         public void OnUpdate()
         {
             _window.ProcessEvents();
-            _window.SwapBuffers();
+
+            try
+            {
+                if (_window.Visible || !_graphicsContext.IsDisposed)
+                    _graphicsContext.SwapBuffers();
+            }
+            catch (System.Exception)
+            {
+            }
         }
 
         public int GetWidth()
         {
-            return _window.Size.X;
+            return _window.Size.Width;
         }
 
         public int GetHeight()
         {
-            return _window.Size.Y;
+            return _window.Size.Height;
         }
 
         public void SetVSync(bool enabled)
         {
             if (enabled)
-                _window.VSync = VSyncMode.On;
+                _graphicsContext.VSync = true;
             else
-                _window.VSync = VSyncMode.Off;
+                _graphicsContext.VSync = false;
         }
 
         public bool IsVSync()
         {
-            return _window.VSync == VSyncMode.On;
+            return _graphicsContext.VSync;
         }
 
-        public void SetEventHandler(Core.EventHandler eventHandler)
+        public void SetEventHandler(EventHandler eventHandler)
         {
             _eventHandler = eventHandler;
+        }
+
+        public Rectangle GetBounds()
+        {
+            return _window.Bounds;
+        }
+
+        public Point PointToClient(Point point)
+        {
+            try
+            {
+                return _window.PointToClient(point);
+            }
+            catch (System.Exception)
+            {
+            }
+
+            return Point.Empty;
         }
     }
 }

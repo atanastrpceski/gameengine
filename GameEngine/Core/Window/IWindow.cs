@@ -1,4 +1,5 @@
 ﻿using GameEngine.Core.Events;
+using OpenTK;
 using System;
 
 namespace GameEngine.Core
@@ -7,6 +8,8 @@ namespace GameEngine.Core
 
     public interface IWindow : IDisposable
     {
+        Point PointToClient(Point point);
+        public Rectangle GetBounds();
         void OnUpdate();
         int GetWidth();
         int GetHeight();

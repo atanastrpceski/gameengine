@@ -1,5 +1,6 @@
 ﻿using GameEngine.Core.Events;
-using OpenToolkit.Graphics.ES30;
+using OpenTK;
+using OpenTK.Graphics.ES20;
 using System;
 
 namespace GameEngine.Core
@@ -9,21 +10,26 @@ namespace GameEngine.Core
         IWindow _window;
         private bool _isRunning = true;
         private LayerStack _layerStack;
+        private static Application _instance = null;
 
         public Application(WindowProp prop)
         {
+            CoreAssert.Assert(_instance == null, "Only one app can run at the time!");
+
             _layerStack = new LayerStack();
             Log.Init();
 
             _window = WindowFactory.Create(prop, PlatformEnum.Windows);
             _window.SetEventHandler(OnEvent);
+
+            _instance = this;
         }
 
         public void Run()
         {
             while (_isRunning)
             {
-                GL.ClearColor(1, 0, 1, 1);
+                GL.ClearColor(Color.Black);
                 GL.Clear(ClearBufferMask.ColorBufferBit);
 
                 foreach (var layer in _layerStack.Layers)
@@ -47,27 +53,37 @@ namespace GameEngine.Core
             }
         }
 
-        private bool OnWindowClose()
+        private void OnWindowClose(WindowCloseEvent @event)
         {
             Log.CoreLogger.Info("WindowCloseEvent");
-
             _isRunning = false;
-            return true;
         }
 
-        void PushLayer(Layer layer)
+        public void PushLayer(Layer layer)
         {
             _layerStack.PushLayer(layer);
+            layer.OnAttach();
         }
 
-        void PushOverlay(Layer layer)
+        public void PushOverlay(Layer layer)
         {
             _layerStack.PushOverlay(layer);
+            layer.OnAttach();
         }
 
         public void Dispose()
         {
             _window.Dispose();
+        }
+
+        public static Application GetApplication()
+        {
+            return _instance;
+        }
+
+        public static IWindow GetWindow()
+        {
+            return _instance._window;
         }
     }
 }

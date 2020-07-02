@@ -5,9 +5,9 @@ namespace GameEngine.Core.Events
     internal static class EventDispatcher<T>
         where T : Event
     {
-        internal delegate bool TriggerEvent();
+        internal delegate void TriggerEvent(T @event);
 
-        internal static void Dispatch(Event @event, TriggerEvent action)
+        internal static void Dispatch(Event @event, Action<T> action)
         {
             if (@event.IsHandled)
                 return;
@@ -15,7 +15,7 @@ namespace GameEngine.Core.Events
             if (@event.GetType() == typeof(T))
             {
                 @event.IsHandled = true;
-                action?.Invoke();
+                action?.Invoke((T)@event);
                 @event = null;
             }
         }

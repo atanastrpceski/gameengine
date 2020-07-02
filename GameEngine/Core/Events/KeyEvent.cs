@@ -1,20 +1,26 @@
-﻿using OpenToolkit.Windowing.Common.Input;
+﻿using OpenTK.Input;
 
 namespace GameEngine.Core.Events
 {
     public class KeyEvent : Event
     {
         protected Key _keyCode;
+        protected KeyModifiers _modifiers;
 
         public Key GetKeyCode()
         {
             return _keyCode;
         }
 
-        protected KeyEvent(Key key)
+        public KeyModifiers GetKeyModifiers()
+        {
+            return _modifiers;
+        }
+
+        protected KeyEvent(Key key, KeyModifiers modifiers)
         {
             _category = EventCategory.Keyboard | EventCategory.Input;
-
+            _modifiers = modifiers;
             _keyCode = key;
         }
     }
@@ -27,7 +33,7 @@ namespace GameEngine.Core.Events
         {
             return _repeatCount;
         }
-        public KeyPressedEvent(Key key, int repeatCount) : base(key)
+        public KeyPressedEvent(Key key, KeyModifiers keyModifiers, int repeatCount) : base(key, keyModifiers)
         {
             _eventType = EventType.KeyPressed;
 
@@ -42,10 +48,11 @@ namespace GameEngine.Core.Events
     public class KeyReleasedEvent : KeyEvent
     {
 
-        public KeyReleasedEvent(Key key) : base(key)
+        public KeyReleasedEvent(Key key, KeyModifiers keyModifiers) : base(key, keyModifiers)
         {
             _eventType = EventType.KeyReleased;
         }
+
         public override string ToString()
         {
             return $"KeyReleased: {_keyCode}";
@@ -54,7 +61,7 @@ namespace GameEngine.Core.Events
 
     public class KeyTypedEvent : KeyEvent
     {
-        public KeyTypedEvent(Key key, int repeatCount) : base(key)
+        public KeyTypedEvent(Key key, KeyModifiers keyModifiers, int repeatCount) : base(key, keyModifiers)
         {
             _eventType = EventType.KeyTyped;
         }
