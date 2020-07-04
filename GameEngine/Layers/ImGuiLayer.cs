@@ -1,7 +1,6 @@
 ﻿using GameEngine.Core;
 using GameEngine.Core.Events;
 using ImGuiNET;
-using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using System;
@@ -12,7 +11,6 @@ namespace GameEngine.Layers
     class ImGuiLayer : Layer
     {
         private int s_fontTexture;
-        private float _wheelPosition;
         private DateTime _previousFrameStartTime;
         private static double s_desiredFrameLength = 1f / 60.0f;
 
@@ -36,7 +34,7 @@ namespace GameEngine.Layers
 
             base.OnUpdate();
         }
-
+        
         public unsafe override void OnAttach()
         {
             ImGui.LoadDefaultFont();
@@ -52,19 +50,61 @@ namespace GameEngine.Layers
         
         public unsafe override void OnEvent(Event @event)
         {
-            EventDispatcher<KeyPressedEvent>.Dispatch(@event, OnKeyDown);
-            EventDispatcher<KeyReleasedEvent>.Dispatch(@event, OnKeyUp);
+            EventDispatcher<MouseButtonPressedEvent>.Dispatch(@event, OnMouseButtonPressedEvent);
+            EventDispatcher<MouseButtonReleasedEvent>.Dispatch(@event, OnMouseButtonReleasedEvent);
+            EventDispatcher<MouseMovedEvent>.Dispatch(@event, OnMouseMovedEvent);
+            EventDispatcher<MouseScrolledEvent>.Dispatch(@event, OnMouseScrolledEvent);
+            EventDispatcher<KeyPressedEvent>.Dispatch(@event, OnKeyPressedEvent);
+            EventDispatcher<KeyReleasedEvent>.Dispatch(@event, OnKeyReleasedEvent);
+            EventDispatcher<KeyTypedEvent>.Dispatch(@event, OnKeyTypedEvent);
+            EventDispatcher<WindowResizeEvent>.Dispatch(@event, OnWindowResizeEvent);
 
             base.OnEvent(@event);
         }
 
-        private unsafe void OnKeyDown(KeyPressedEvent e)
+        private unsafe void OnMouseButtonPressedEvent(MouseButtonPressedEvent e)
+        {
+            ImGui.GetIO().MouseDown[e.GetMouseButton()] = true;
+        }
+
+        private unsafe void OnMouseButtonReleasedEvent(MouseButtonReleasedEvent e)
+        {
+            ImGui.GetIO().MouseDown[e.GetMouseButton()] = false;
+        }
+
+        private unsafe void OnMouseMovedEvent(MouseMovedEvent e)
+        {
+            ImGui.GetIO().MousePosition = new System.Numerics.Vector2((float)e.GetXOffset(), (float)e.GetYOffset());
+        }
+
+        private unsafe void OnWindowResizeEvent(WindowResizeEvent e)
+        {
+            var io = ImGui.GetIO();
+            io.DisplaySize = new System.Numerics.Vector2(e.GetWidth(), e.GetHeight());
+            io.DisplayFramebufferScale = new System.Numerics.Vector2(1.0f, 1.0f);
+            GL.Viewport(0, 0, e.GetWidth(), e.GetHeight());
+        }
+
+        private unsafe void OnKeyTypedEvent(KeyTypedEvent e)
+        {
+            int keycode = e.GetChar();
+            if (keycode > 0 && keycode < 0x10000)
+                ImGuiNative.ImGuiIO_AddInputCharacter((ushort)keycode);
+        }
+
+        private unsafe void OnMouseScrolledEvent(MouseScrolledEvent e)
+        {
+            var io = ImGui.GetIO();
+            io.MouseWheel += (float)e.GetYOffset();
+        }
+
+        private unsafe void OnKeyPressedEvent(KeyPressedEvent e)
         {
             ImGui.GetIO().KeysDown[(int)e.GetKeyCode()] = true;
             UpdateModifiers(e.GetKeyModifiers());
         }
 
-        private unsafe void OnKeyUp(KeyReleasedEvent e)
+        private unsafe void OnKeyReleasedEvent(KeyReleasedEvent e)
         {
             ImGui.GetIO().KeysDown[(int)e.GetKeyCode()] = false;
             UpdateModifiers(e.GetKeyModifiers());
@@ -80,6 +120,7 @@ namespace GameEngine.Layers
         private static unsafe void SetOpenTKKeyMappings()
         {
             var io = ImGui.GetIO();
+
             io.KeyMap[GuiKey.Tab] = (int)Key.Tab;
             io.KeyMap[GuiKey.LeftArrow] = (int)Key.Left;
             io.KeyMap[GuiKey.RightArrow] = (int)Key.Right;
@@ -140,8 +181,6 @@ namespace GameEngine.Layers
             io.DisplayFramebufferScale = new System.Numerics.Vector2(1.0f);
             io.DeltaTime = (1f / 60f);
 
-            UpdateImGuiInput(io);
-
             ImGui.NewFrame();
 
             PreRenderFrame();
@@ -154,19 +193,19 @@ namespace GameEngine.Layers
         }
 
         private unsafe void PreRenderFrame()
-        { 
-
+        {
+            
         }
 
         protected unsafe void UpdateRenderState()
         {
             ImGuiNative.igGetStyle()->WindowRounding = 0;
             ImGuiNative.igGetStyle()->ColumnsMinSpacing = 1;
-            var leftFrameSize = new System.Numerics.Vector2(Application.GetWindow().GetWidth() - 10, Application.GetWindow().GetHeight());
-            ImGui.SetNextWindowSize(leftFrameSize, SetCondition.Always);
+            var windowSize = new System.Numerics.Vector2(400, 400);
+            ImGui.SetNextWindowSize(windowSize, SetCondition.Always);
             ImGui.SetNextWindowPosCenter(SetCondition.Always);
-            ImGui.BeginWindow("Assembly Browser Main Window",
-                WindowFlags.NoResize | WindowFlags.NoTitleBar | WindowFlags.NoMove | WindowFlags.ShowBorders | WindowFlags.MenuBar | WindowFlags.NoScrollbar);
+            ImGui.BeginWindow("Demo Window", WindowFlags.AlwaysAutoResize);
+            //WindowFlags.NoResize | WindowFlags.NoTitleBar | WindowFlags.NoMove | WindowFlags.ShowBorders | WindowFlags.MenuBar | WindowFlags.NoScrollbar
 
             ImGui.EndWindow();
         }
@@ -268,31 +307,6 @@ namespace GameEngine.Layers
             GL.MatrixMode(MatrixMode.Projection);
             GL.PopMatrix();
             GL.PopAttrib();
-        }
-
-        private unsafe void UpdateImGuiInput(IO io)
-        {
-            MouseState cursorState = Mouse.GetCursorState();
-            MouseState mouseState = Mouse.GetState();
-
-            if (Application.GetWindow().GetBounds().Contains(cursorState.X, cursorState.Y))
-            {
-                Point windowPoint = Application.GetWindow().PointToClient(new Point(cursorState.X, cursorState.Y));
-                io.MousePosition = new System.Numerics.Vector2(windowPoint.X / io.DisplayFramebufferScale.X, windowPoint.Y / io.DisplayFramebufferScale.Y);
-            }
-            else
-            {
-                io.MousePosition = new System.Numerics.Vector2(-1f, -1f);
-            }
-
-            io.MouseDown[0] = mouseState.LeftButton == ButtonState.Pressed;
-            io.MouseDown[1] = mouseState.RightButton == ButtonState.Pressed;
-            io.MouseDown[2] = mouseState.MiddleButton == ButtonState.Pressed;
-
-            float newWheelPos = mouseState.WheelPrecise;
-            float delta = newWheelPos - _wheelPosition;
-            _wheelPosition = newWheelPos;
-            io.MouseWheel = delta;
         }
     }
 }

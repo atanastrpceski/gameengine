@@ -36,11 +36,55 @@ namespace GameEngine.Platform.Windows
             ////Set callbacks
 
             _window.Closed += HandleWindowClosed;
+            _window.KeyPress += HandleWindowKeyPress;
             _window.KeyUp += HandleKeyUp;
             _window.KeyDown += HandleKeyDown;
             _window.MouseMove += HandleMouseMoved;
             _window.MouseWheel += HandleMouseScroll;
             _window.Resize += HandleWindowSizeChanged;
+            _window.MouseUp += HandleMouseUp;
+            _window.MouseDown += HandleMouseDown;
+        }
+
+        private void HandleMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var button = 0;
+            if (e.Mouse.LeftButton == ButtonState.Pressed)
+            {
+                button = 0;
+            }
+            if (e.Mouse.RightButton == ButtonState.Pressed)
+            {
+                button = 1;
+            }
+            if (e.Mouse.MiddleButton == ButtonState.Pressed)
+            {
+                button = 2;
+            }
+            _eventHandler?.Invoke(new MouseButtonPressedEvent(button));
+        }
+
+        private void HandleMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            var button = 0;
+            if (e.Mouse.LeftButton == ButtonState.Released)
+            {
+                button = 0;
+            }
+            if (e.Mouse.RightButton == ButtonState.Released)
+            {
+                button = 1;
+            }
+            if (e.Mouse.MiddleButton == ButtonState.Released)
+            {
+                button = 2;
+            }
+            _eventHandler?.Invoke(new MouseButtonReleasedEvent(button));
+        }
+
+        private void HandleWindowKeyPress(object sender, KeyPressEventArgs e)
+        {
+            _eventHandler?.Invoke(new KeyTypedEvent(e.KeyChar));
         }
 
         private void HandleMouseMoved(object sender, MouseMoveEventArgs e)
@@ -83,11 +127,14 @@ namespace GameEngine.Platform.Windows
         public void Dispose()
         {
             _window.Closed -= HandleWindowClosed;
+            _window.KeyPress -= HandleWindowKeyPress;
             _window.KeyUp -= HandleKeyUp;
             _window.KeyDown -= HandleKeyDown;
             _window.MouseMove -= HandleMouseMoved;
             _window.MouseWheel -= HandleMouseScroll;
             _window.Resize -= HandleWindowSizeChanged;
+            _window.MouseUp -= HandleMouseUp;
+            _window.MouseDown -= HandleMouseDown;
 
             _graphicsContext.Dispose();
             _window.Visible = false;

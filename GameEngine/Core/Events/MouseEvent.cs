@@ -49,4 +49,45 @@ namespace GameEngine.Core.Events
             return $"MouseMovedEvent: {_mouseX}, {_mouseY}";
         }
     }
+
+    public class MouseButtonEvent : Event
+    {
+        protected int m_Button;
+
+        public int GetMouseButton()
+        {
+            return m_Button;
+        }
+
+        public MouseButtonEvent(int button)
+        {
+            m_Button = button;
+            _category = EventCategory.Mouse | EventCategory.Input;
+        }
+    }
+
+    public class MouseButtonPressedEvent : MouseButtonEvent
+    {
+        public MouseButtonPressedEvent(int button) : base(button)
+        {
+            _eventType = EventType.MouseButtonPressed;
+        }
+
+        public override string ToString()
+        {
+            return "MouseButtonPressedEvent: " + m_Button;
+        }
+    }
+
+    public class MouseButtonReleasedEvent : MouseButtonEvent
+    {
+        public MouseButtonReleasedEvent(int button) : base(button)
+        {
+            _eventType = EventType.MouseButtonReleased;
+        }
+        public override string ToString()
+        {
+            return "MouseButtonReleasedEvent: " + m_Button;
+        }
+    }
 }

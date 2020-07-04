@@ -18,6 +18,16 @@ namespace GameEngine.Core.Events
             this._height = height;
         }
 
+        public int GetWidth()
+        {
+            return _width;
+        }
+
+        public int GetHeight()
+        {
+            return _height;
+        }
+
         public override string ToString()
         {
             return $"WindowResizeEvent: {_width}, {_height}";

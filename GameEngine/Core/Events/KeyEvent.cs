@@ -59,15 +59,26 @@ namespace GameEngine.Core.Events
         }
     }
 
-    public class KeyTypedEvent : KeyEvent
+    public class KeyTypedEvent : Event
     {
-        public KeyTypedEvent(Key key, KeyModifiers keyModifiers, int repeatCount) : base(key, keyModifiers)
+        protected char _keyCode;
+        protected KeyModifiers _modifiers;
+
+        public char GetChar()
         {
+            return _keyCode;
+        }
+
+        public KeyTypedEvent(char keyCode)
+        {
+            _keyCode = keyCode;
+
             _eventType = EventType.KeyTyped;
+            _category = EventCategory.Keyboard | EventCategory.Input;
         }
         public override string ToString()
         {
-            return $"KeyTyped: {_keyCode}";
+            return $"KeyTypedEvent: {_keyCode}";
         }
     }
 }
