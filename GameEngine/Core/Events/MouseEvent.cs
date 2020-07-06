@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameEngine.Core.Events
+﻿namespace GameEngine.Core.Events
 {
     public class MouseScrolledEvent : Event
     {

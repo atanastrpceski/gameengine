@@ -8,7 +8,7 @@ namespace GameEngine.Platform.Windows
 {
     public class Window : IWindow
     {
-        NativeWindow _window;
+        NativeWindow _nativeWindow;
         EventHandler _eventHandler;
 
         private GraphicsContext _graphicsContext;
@@ -22,28 +22,28 @@ namespace GameEngine.Platform.Windows
         {
             Log.CoreLogger.Info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
-            _window = new NativeWindow(props.Width, props.Height, props.Title, GameWindowFlags.Default, GraphicsMode.Default, DisplayDevice.Default);
+            _nativeWindow = new NativeWindow(props.Width, props.Height, props.Title, GameWindowFlags.Default, GraphicsMode.Default, DisplayDevice.Default);
 
             GraphicsContextFlags flags = GraphicsContextFlags.Default;
-            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _window.WindowInfo, 3, 0, flags);
-            _graphicsContext.MakeCurrent(_window.WindowInfo);
+            _graphicsContext = new GraphicsContext(GraphicsMode.Default, _nativeWindow.WindowInfo, 3, 0, flags);
+            _graphicsContext.MakeCurrent(_nativeWindow.WindowInfo);
             ((IGraphicsContextInternal)_graphicsContext).LoadAll(); // wtf is this?
 
             SetVSync(true);
 
-            _window.Visible = true;
+            _nativeWindow.Visible = true;
 
             ////Set callbacks
 
-            _window.Closed += HandleWindowClosed;
-            _window.KeyPress += HandleWindowKeyPress;
-            _window.KeyUp += HandleKeyUp;
-            _window.KeyDown += HandleKeyDown;
-            _window.MouseMove += HandleMouseMoved;
-            _window.MouseWheel += HandleMouseScroll;
-            _window.Resize += HandleWindowSizeChanged;
-            _window.MouseUp += HandleMouseUp;
-            _window.MouseDown += HandleMouseDown;
+            _nativeWindow.Closed += HandleWindowClosed;
+            _nativeWindow.KeyPress += HandleWindowKeyPress;
+            _nativeWindow.KeyUp += HandleKeyUp;
+            _nativeWindow.KeyDown += HandleKeyDown;
+            _nativeWindow.MouseMove += HandleMouseMoved;
+            _nativeWindow.MouseWheel += HandleMouseScroll;
+            _nativeWindow.Resize += HandleWindowSizeChanged;
+            _nativeWindow.MouseUp += HandleMouseUp;
+            _nativeWindow.MouseDown += HandleMouseDown;
         }
 
         private void HandleMouseDown(object sender, MouseButtonEventArgs e)
@@ -121,35 +121,40 @@ namespace GameEngine.Platform.Windows
 
         private void HandleWindowSizeChanged(object sender, System.EventArgs e)
         {
-            _eventHandler?.Invoke(new WindowResizeEvent(_window.Size.Width, _window.Size.Height));
+            _eventHandler?.Invoke(new WindowResizeEvent(_nativeWindow.Size.Width, _nativeWindow.Size.Height));
         }
 
         public void Dispose()
         {
-            _window.Closed -= HandleWindowClosed;
-            _window.KeyPress -= HandleWindowKeyPress;
-            _window.KeyUp -= HandleKeyUp;
-            _window.KeyDown -= HandleKeyDown;
-            _window.MouseMove -= HandleMouseMoved;
-            _window.MouseWheel -= HandleMouseScroll;
-            _window.Resize -= HandleWindowSizeChanged;
-            _window.MouseUp -= HandleMouseUp;
-            _window.MouseDown -= HandleMouseDown;
+            _nativeWindow.Closed -= HandleWindowClosed;
+            _nativeWindow.KeyPress -= HandleWindowKeyPress;
+            _nativeWindow.KeyUp -= HandleKeyUp;
+            _nativeWindow.KeyDown -= HandleKeyDown;
+            _nativeWindow.MouseMove -= HandleMouseMoved;
+            _nativeWindow.MouseWheel -= HandleMouseScroll;
+            _nativeWindow.Resize -= HandleWindowSizeChanged;
+            _nativeWindow.MouseUp -= HandleMouseUp;
+            _nativeWindow.MouseDown -= HandleMouseDown;
 
             _graphicsContext.Dispose();
-            _window.Visible = false;
+            _nativeWindow.Visible = false;
 
-            _window.Close();
-            _window.Dispose();
+            _nativeWindow.Close();
+            _nativeWindow.Dispose();
+        }
+
+        public INativeWindow GetNativeWindow()
+        {
+            return _nativeWindow;
         }
 
         public void OnUpdate()
         {
-            _window.ProcessEvents();
+            _nativeWindow.ProcessEvents();
 
             try
             {
-                if (_window.Visible || !_graphicsContext.IsDisposed)
+                if (_nativeWindow.Visible || !_graphicsContext.IsDisposed)
                     _graphicsContext.SwapBuffers();
             }
             catch (System.Exception)
@@ -159,12 +164,12 @@ namespace GameEngine.Platform.Windows
 
         public int GetWidth()
         {
-            return _window.Size.Width;
+            return _nativeWindow.Size.Width;
         }
 
         public int GetHeight()
         {
-            return _window.Size.Height;
+            return _nativeWindow.Size.Height;
         }
 
         public void SetVSync(bool enabled)
@@ -183,24 +188,6 @@ namespace GameEngine.Platform.Windows
         public void SetEventHandler(EventHandler eventHandler)
         {
             _eventHandler = eventHandler;
-        }
-
-        public Rectangle GetBounds()
-        {
-            return _window.Bounds;
-        }
-
-        public Point PointToClient(Point point)
-        {
-            try
-            {
-                return _window.PointToClient(point);
-            }
-            catch (System.Exception)
-            {
-            }
-
-            return Point.Empty;
         }
     }
 }

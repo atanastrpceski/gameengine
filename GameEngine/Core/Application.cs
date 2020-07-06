@@ -17,6 +17,7 @@ namespace GameEngine.Core
             CoreAssert.Assert(_instance == null, "Only one app can run at the time!");
 
             _layerStack = new LayerStack();
+
             Log.Init();
 
             _window = WindowFactory.Create(prop, PlatformEnum.Windows);
@@ -73,6 +74,11 @@ namespace GameEngine.Core
 
         public void Dispose()
         {
+            foreach (var layer in _layerStack.Layers)
+            {
+                layer.OnDetach();
+            }
+
             _window.Dispose();
         }
 
@@ -84,6 +90,11 @@ namespace GameEngine.Core
         public static IWindow GetWindow()
         {
             return _instance._window;
+        }
+
+        public static INativeWindow GetNativeWindow()
+        {
+            return _instance._window.GetNativeWindow();
         }
     }
 }

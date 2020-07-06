@@ -8,8 +8,8 @@ namespace GameEngine.Core
 
     public interface IWindow : IDisposable
     {
-        Point PointToClient(Point point);
-        public Rectangle GetBounds();
+        INativeWindow GetNativeWindow();
+
         void OnUpdate();
         int GetWidth();
         int GetHeight();

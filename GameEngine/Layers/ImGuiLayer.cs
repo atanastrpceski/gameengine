@@ -14,6 +14,11 @@ namespace GameEngine.Layers
         private DateTime _previousFrameStartTime;
         private static double s_desiredFrameLength = 1f / 60.0f;
 
+        public ImGuiLayer() : base("ImGui")
+        { 
+        
+        }
+
         public unsafe override void OnUpdate()
         {
             _previousFrameStartTime = DateTime.UtcNow;
@@ -37,6 +42,8 @@ namespace GameEngine.Layers
         
         public unsafe override void OnAttach()
         {
+            Log.CoreLogger.Info("Attaching Layer: " + GetName());
+
             ImGui.LoadDefaultFont();
             SetOpenTKKeyMappings();
             CreateDeviceObjects();
@@ -45,6 +52,7 @@ namespace GameEngine.Layers
 
         public unsafe override void OnDetach()
         {
+            Log.CoreLogger.Info("Detaching Layer: " + GetName());
             base.OnDetach();
         }
         

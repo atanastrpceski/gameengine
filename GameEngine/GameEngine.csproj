@@ -11,12 +11,17 @@
 
   <ItemGroup>
     <PackageReference Include="NLog" Version="4.7.2" />
-    <PackageReference Include="NLog.Config" Version="4.7.2" />
     <PackageReference Include="OpenTK.NETCore" Version="1.1.2749.6433" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ImGui.NET\ImGui.NET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

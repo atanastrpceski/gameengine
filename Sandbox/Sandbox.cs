@@ -1,4 +1,5 @@
 ﻿using GameEngine.Core;
+using GameEngine.Core.Window;
 
 namespace Sandbox
 {
@@ -6,7 +7,7 @@ namespace Sandbox
     {
         public Sandbox(WindowProp prop) : base(prop)
         {
-
+            var asd = Input.GetMousePosition();
         }
     }
 }
