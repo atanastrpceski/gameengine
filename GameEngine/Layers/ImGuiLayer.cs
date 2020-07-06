@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace GameEngine.Layers
 {
-    class ImGuiLayer : Layer
+    public class ImGuiLayer : Layer
     {
         private int s_fontTexture;
         private DateTime _previousFrameStartTime;
@@ -42,7 +42,7 @@ namespace GameEngine.Layers
         
         public unsafe override void OnAttach()
         {
-            Log.CoreLogger.Info("Attaching Layer: " + GetName());
+            Log.CoreLogger.Info("Attaching Overlay: " + GetName());
 
             ImGui.LoadDefaultFont();
             SetOpenTKKeyMappings();
@@ -52,7 +52,7 @@ namespace GameEngine.Layers
 
         public unsafe override void OnDetach()
         {
-            Log.CoreLogger.Info("Detaching Layer: " + GetName());
+            Log.CoreLogger.Info("Detaching Overlay: " + GetName());
             base.OnDetach();
         }
         

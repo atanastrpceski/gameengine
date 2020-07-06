@@ -14,7 +14,7 @@ namespace GameEngine.Platform.Windows
         protected override bool IsKeyPressedImpl(int keycode)
         {
             var state = Keyboard.GetState();
-            return state[(Key)keycode];
+            return state[(short)keycode];
         }
 
         protected override Tuple<float, float> GetMousePositionImpl()

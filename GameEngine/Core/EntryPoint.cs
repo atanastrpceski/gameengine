@@ -17,8 +17,6 @@ namespace GameEngine.Core
             Log.CoreLogger.Warn("Init");
             Log.ClientLogger.Warn("Init");
 
-            _app.PushLayer(new ImGuiLayer());
-
             _app.Run();
             _app.Dispose();
         }

@@ -99,18 +99,18 @@ namespace GameEngine.Platform.Windows
 
         private void HandleKeyUp(object sender, KeyboardKeyEventArgs e)
         {
-            _eventHandler?.Invoke(new KeyReleasedEvent(e.Key, e.Modifiers));
+            _eventHandler?.Invoke(new KeyReleasedEvent((int)e.Key, e.Modifiers));
         }
 
         private void HandleKeyDown(object sender, KeyboardKeyEventArgs e)
         {
             if (e.IsRepeat)
             {
-                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, e.Modifiers, 1));
+                _eventHandler?.Invoke(new KeyPressedEvent((int)e.Key, e.Modifiers, 1));
             }
             else
             {
-                _eventHandler?.Invoke(new KeyPressedEvent(e.Key, e.Modifiers, 0));
+                _eventHandler?.Invoke(new KeyPressedEvent((int)e.Key, e.Modifiers, 0));
             }
         }
 

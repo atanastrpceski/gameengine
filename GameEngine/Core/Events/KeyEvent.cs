@@ -4,10 +4,10 @@ namespace GameEngine.Core.Events
 {
     public class KeyEvent : Event
     {
-        protected Key _keyCode;
+        protected int _keyCode;
         protected KeyModifiers _modifiers;
 
-        public Key GetKeyCode()
+        public int GetKeyCode()
         {
             return _keyCode;
         }
@@ -17,7 +17,7 @@ namespace GameEngine.Core.Events
             return _modifiers;
         }
 
-        protected KeyEvent(Key key, KeyModifiers modifiers)
+        protected KeyEvent(int key, KeyModifiers modifiers)
         {
             _category = EventCategory.Keyboard | EventCategory.Input;
             _modifiers = modifiers;
@@ -33,7 +33,7 @@ namespace GameEngine.Core.Events
         {
             return _repeatCount;
         }
-        public KeyPressedEvent(Key key, KeyModifiers keyModifiers, int repeatCount) : base(key, keyModifiers)
+        public KeyPressedEvent(int key, KeyModifiers keyModifiers, int repeatCount) : base(key, keyModifiers)
         {
             _eventType = EventType.KeyPressed;
 
@@ -48,7 +48,7 @@ namespace GameEngine.Core.Events
     public class KeyReleasedEvent : KeyEvent
     {
 
-        public KeyReleasedEvent(Key key, KeyModifiers keyModifiers) : base(key, keyModifiers)
+        public KeyReleasedEvent(int key, KeyModifiers keyModifiers) : base(key, keyModifiers)
         {
             _eventType = EventType.KeyReleased;
         }

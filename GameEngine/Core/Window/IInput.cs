@@ -19,7 +19,7 @@ namespace GameEngine.Core.Window
 
         public static bool IsMouseButtonPressed(int button)
         {
-            return _instance.IsKeyPressedImpl(button);
+            return _instance.IsMouseButtonPressedImpl(button);
         }
 
         protected virtual bool IsMouseButtonPressedImpl(int button)
