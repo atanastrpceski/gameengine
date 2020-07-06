@@ -27,7 +27,7 @@ namespace GameEngine.Platform.Windows
             GraphicsContextFlags flags = GraphicsContextFlags.Default;
             _graphicsContext = new GraphicsContext(GraphicsMode.Default, _nativeWindow.WindowInfo, 3, 0, flags);
             _graphicsContext.MakeCurrent(_nativeWindow.WindowInfo);
-            ((IGraphicsContextInternal)_graphicsContext).LoadAll(); // wtf is this?
+            _graphicsContext.LoadAll(); // wtf is this?
 
             SetVSync(true);
 
@@ -175,14 +175,14 @@ namespace GameEngine.Platform.Windows
         public void SetVSync(bool enabled)
         {
             if (enabled)
-                _graphicsContext.VSync = true;
+                _graphicsContext.SwapInterval = 1;
             else
-                _graphicsContext.VSync = false;
+                _graphicsContext.SwapInterval = 0;
         }
 
         public bool IsVSync()
         {
-            return _graphicsContext.VSync;
+            return _graphicsContext.SwapInterval == 1;
         }
 
         public void SetEventHandler(EventHandler eventHandler)

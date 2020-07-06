@@ -2,7 +2,6 @@
 using GameEngine.Core.Events;
 using GameEngine.Core.Window;
 using GameEngine.Layers;
-using OpenTK.Input;
 
 namespace Sandbox
 {
